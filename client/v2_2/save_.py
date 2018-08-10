@@ -36,13 +36,14 @@ import six
 
 
 
-def _diff_id(v1_img, blob):
-  try:
+def _diff_id(v1_img: v1_image.DockerImage, blob: Text) -> Text:
+  diff_id = v1_img.diff_id(blob)
+
+  if not diff_id:
     unzipped = v1_img.uncompressed_layer(blob)
-    return docker_digest.SHA256(unzipped)
-  except IOError:
-    # For foreign layers, we do not have the layer.tar
-    return v1_img.diff_id(blob)
+    diff_id =  docker_digest.SHA256(unzipped)
+
+  return diff_id
 
 
 def multi_image_tarball(
