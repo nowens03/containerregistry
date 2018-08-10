@@ -36,7 +36,7 @@ import six
 
 
 
-def _diff_id(v1_img: v1_image.DockerImage, blob: Text) -> Text:
+def _diff_id(v1_img, blob):
   diff_id = v1_img.diff_id(blob)
 
   if not diff_id:
