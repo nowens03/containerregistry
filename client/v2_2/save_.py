@@ -29,6 +29,7 @@ from containerregistry.client.v1 import docker_image as v1_image
 from containerregistry.client.v1 import save as v1_save
 from containerregistry.client.v2 import v1_compat
 from containerregistry.client.v2_2 import docker_digest
+from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 from containerregistry.client.v2_2 import v2_compat
 
@@ -77,8 +78,6 @@ def multi_image_tarball(
   #           ancestry ordering.
   #  - RepoTags: the list of tags to apply to this image once it
   #             is loaded.
-  #  - LayerSources: optionally declare foreign layers declared in
-  #                  the base image
   manifests = []
 
   for (tag, image) in six.iteritems(tag_to_image):
@@ -109,10 +108,16 @@ def multi_image_tarball(
         'RepoTags': [str(tag)]
     }
 
+    layer_sources = {}
     input_manifest = json.loads(image.manifest())
+    input_layers = input_manifest['layers']
 
-    if 'LayerSources' in input_manifest:
-      manifest['LayerSources'] = input_manifest['LayerSources']
+    for i, diff_id in enumerate(diffs):
+      if input_layers[i]['mediaType'] == docker_http.FOREIGN_LAYER_MIME:
+        layer_sources[diff_id] = input_layers[i]
+
+    if layer_sources:
+      manifest['LayerSources'] = layer_sources
 
     manifests.append(manifest)
 
